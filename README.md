@@ -37,7 +37,6 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
 
 - PHP 7.4+
 - Composer
-- Node.js and npm (for Tailwind CSS)
 - Laravel 8.x
 - Weatherbit API key
 
@@ -54,27 +53,22 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
    composer install
    ```
 
-3. Install and compile frontend dependencies:
-   ```
-   npm install && npm run dev
-   ```
-
-4. Copy the `.env.example` file to `.env` and configure your environment variables:
+3. Copy the `.env.example` file to `.env` and configure your environment variables:
    ```
    cp .env.example .env
    ```
 
-5. Generate an application key:
+4. Generate an application key:
    ```
    php artisan key:generate
    ```
 
-6. Configure your database in the `.env` file and run migrations:
+5. Configure your database in the `.env` file and run migrations:
    ```
    php artisan migrate
    ```
 
-7. Add your Weatherbit API key to the `.env` file:
+6. Add your Weatherbit API key to the `.env` file:
    ```
    WEATHERBIT_API_KEY=your_api_key_here
    ```
