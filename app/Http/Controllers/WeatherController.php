@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use App\Models\SearchHistory;
+use Illuminate\Support\Facades\Log;
 
 class WeatherController extends Controller
 {
@@ -35,11 +36,10 @@ class WeatherController extends Controller
 
         $cacheKey = "weather_{$city}_{$country}";
 
-        // Check if the data is in the cache
-        if (Cache::has($cacheKey)) {
-            $weatherData = Cache::get($cacheKey);
-        } else {
-            try {
+        try {
+            if (Cache::has($cacheKey)) {
+                $weatherData = Cache::get($cacheKey);
+            } else {
                 $currentWeather = $this->getCurrentWeather($city, $country);
                 $forecast = $this->getForecast($city, $country);
 
@@ -48,47 +48,64 @@ class WeatherController extends Controller
                     'forecast' => $forecast
                 ];
 
-                // Cache the data for 30 minutes
                 Cache::put($cacheKey, $weatherData, now()->addMinutes(30));
 
-                // Store the search in history
                 SearchHistory::create([
                     'city' => $city,
                     'country' => $country,
+                    'weather_data' => $weatherData,
                 ]);
-            } catch (\Exception $e) {
-                return back()->withError('Unable to fetch weather data. Please try again later.');
             }
+
+            return view('weather.result', compact('weatherData', 'city', 'country'));
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error('API request failed: ' . $e->getMessage());
+            return back()->withError('Unable to fetch weather data. The weather service might be unavailable.');
+        } catch (\Exception $e) {
+            Log::error('Unexpected error: ' . $e->getMessage());
+            return back()->withError('An unexpected error occurred. Please try again later.');
         }
+    }
+
+    public function showSavedWeather($id)
+    {
+        $searchHistory = SearchHistory::findOrFail($id);
+        $weatherData = $searchHistory->weather_data;
+        $city = $searchHistory->city;
+        $country = $searchHistory->country;
 
         return view('weather.result', compact('weatherData', 'city', 'country'));
     }
 
     private function getCurrentWeather($city, $country)
     {
-        $response = Http::get($this->baseUrl . 'current', [
+        $response = Http::timeout(15)->get($this->baseUrl . 'current', [
             'key' => $this->apiKey,
             'city' => $city,
             'country' => $country,
         ]);
 
-        $response->throw();  // This will throw an exception for 4xx and 5xx errors
+        if ($response->successful()) {
+            return $response->json()['data'][0];
+        }
 
-        return $response->json()['data'][0];
+        throw new \Exception('Failed to fetch current weather: ' . $response->body());
     }
 
     private function getForecast($city, $country)
     {
-        $response = Http::get($this->baseUrl . 'forecast/daily', [
+        $response = Http::timeout(15)->get($this->baseUrl . 'forecast/daily', [
             'key' => $this->apiKey,
             'city' => $city,
             'country' => $country,
             'days' => 5,
         ]);
 
-        $response->throw();
+        if ($response->successful()) {
+            return $response->json()['data'];
+        }
 
-        return $response->json()['data'];
+        throw new \Exception('Failed to fetch forecast: ' . $response->body());
     }
 
     public function getHistory()

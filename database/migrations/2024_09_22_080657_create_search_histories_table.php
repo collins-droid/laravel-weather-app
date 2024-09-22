@@ -12,6 +12,7 @@ class CreateSearchHistoriesTable extends Migration
             $table->id();
             $table->string('city');
             $table->string('country', 2);
+            $table->json('weather_data');
             $table->timestamps();
         });
     }
@@ -21,4 +22,3 @@ class CreateSearchHistoriesTable extends Migration
         Schema::dropIfExists('search_histories');
     }
 }
-

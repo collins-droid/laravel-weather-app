@@ -9,5 +9,9 @@ class SearchHistory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['city', 'country'];
+    protected $fillable = ['city', 'country', 'weather_data'];
+
+    protected $casts = [
+        'weather_data' => 'array',
+    ];
 }
