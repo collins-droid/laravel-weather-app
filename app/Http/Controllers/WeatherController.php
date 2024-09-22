@@ -108,9 +108,5 @@ class WeatherController extends Controller
         throw new \Exception('Failed to fetch forecast: ' . $response->body());
     }
 
-    public function getHistory()
-    {
-        $searchHistory = SearchHistory::orderBy('created_at', 'desc')->paginate(10);
-        return view('weather.history', compact('searchHistory'));
-    }
+    
 }
