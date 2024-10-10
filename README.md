@@ -63,10 +63,34 @@ Laravel is accessible, powerful, and provides tools required for large, robust a
    php artisan key:generate
    ```
 
-5. Configure your database in the `.env` file and run migrations:
-   ```
-   php artisan migrate
-   ```
+
+
+5. Install SQLite
+
+If you encounter an error indicating that the database cannot be found, follow these steps to install SQLite and set up your database:
+
+- For Ubuntu or similar Linux distributions, install SQLite:
+  ```bash
+  sudo apt update
+  sudo apt install sqlite3 libsqlite3-dev
+  sudo apt install php-sqlite3
+  ```
+
+- Ensure that the `DB_CONNECTION` variable in your `.env` file is set to `sqlite`:
+  ```ini
+  DB_CONNECTION=sqlite
+  ```
+
+- Create a new SQLite database file in the `database` directory:
+  ```bash
+  touch database/database.sqlite
+  ```
+
+- Run the migrations again:
+  ```bash
+  php artisan migrate
+  ```
+
 
 6. Add your Weatherbit API key to the `.env` file:
    ```
